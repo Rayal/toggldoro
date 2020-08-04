@@ -1,6 +1,12 @@
-from flask import Flask
+from flask import Flask, make_response, request, Response, abort
+from flask.helpers import NotFound
+
+import timers
 
 app = Flask(__name__)
+
+
+# TODO: User identification & HTTPS
 
 
 @app.route('/')
@@ -8,28 +14,44 @@ def hello_world():
     return 'Hello World!'
 
 
-# TODO: Set POST. Start timer. Redirect to timer page.
-@app.route('/start')
+# TODO: Redirect to timer page??
+@app.route('/start', methods=['POST'])
 def start_timer():
-    pass
+    req = request.json
+    uid = timers.start_timer(req['title'])
+    return {'uuid': uid}
 
 
-# TODO: Set POST. End timer. Redirect to logs page.
-@app.route('/stop')
+# TODO: Add log. Redirect to logs page??
+@app.route('/stop', methods=['PUT'])
 def stop_timer():
-    pass
+    req = request.json
+    try:
+        title, elapsed = timers.stop_timer(req['uuid'])
+        return {
+            'title': title,
+            'elapsed': elapsed
+        }
+    except KeyError:
+        abort(400)
 
 
-# TODO: Set POST. Add log. Redirect?
-@app.route('/log')
+# TODO: Add log. Redirect?
+@app.route('/log', methods=['POST'])
 def add_log():
     pass
 
 
-# TODO
-@app.route('/timer')
-def get_timer():
-    pass
+@app.route('/timer/<uid>')
+def get_timer(uid):
+    try:
+        title, elapsed = timers.get_time(uid)
+        return {
+            'title': title,
+            'elapsed': elapsed
+        }
+    except KeyError:
+        abort(400)
 
 
 # TODO
